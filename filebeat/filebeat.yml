@@ -1,0 +1,21 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/web/*.log
+    - /var/log/host/*.log
+    - /var/log/db/*.log
+- type: log
+  enabled: true
+  paths:
+    - /var/log/suricata/eve.json
+  json.keys_under_root: true
+  json.add_error_key: true
+  fields:
+    log_type: suricata
+  fields_under_root: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+setup.kibana:
+  host: "kibana:5601"

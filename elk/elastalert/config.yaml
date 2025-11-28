@@ -1,0 +1,20 @@
+# ====== ELASTALERT CONFIG ======
+
+es_host: elasticsearch
+es_port: 9200
+
+writeback_index: elastalert_status
+
+run_every:
+  seconds: 30
+
+buffer_time:
+  minutes: 2
+
+rules_folder: /opt/elastalert/rules
+
+alert_time_limit:
+  days: 1
+
+# don't exit on startup index check
+skip_invalid: true

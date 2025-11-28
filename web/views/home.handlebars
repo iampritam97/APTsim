@@ -1,0 +1,25 @@
+<h1>Welcome to VulnShop</h1>
+<p class="lead">A deliberately vulnerable web app for training and SIEM testing.</p>
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card p-3 mb-3">
+      <h5>Quick Links</h5>
+      <ul>
+        <li><a href="/products">Products</a></li>
+        <li><a href="/search">Search</a></li>
+        <li><a href="/upload">Upload</a></li>
+        <li><a href="/msg">Messages</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <h5>Try this</h5>
+    <ul>
+      <li>SQLi: /login or /search?q=' OR '1'='1</li>
+      <li>XSS: POST /msg body msg=&lt;script&gt;alert(1)&lt;/script&gt;</li>
+      <li>RCE: /ping?host=example.com;id</li>
+      <li>Path traversal: /read?file=/etc/passwd</li>
+    </ul>
+  </div>
+</div>

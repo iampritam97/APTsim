@@ -1,0 +1,168 @@
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    ports:
+      - "9200:9200"
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.10
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.3
+
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: aptsim-suricata
+    privileged: true
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.70
+    volumes:
+      - ./suricata/suricata.yaml:/etc/suricata/suricata.yaml
+      - ./suricata/rules:/var/lib/suricata/rules
+      - suri-logs:/var/log/suricata
+    command: -i eth0
+
+  web:
+    build: ./web
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - web-logs:/var/log/web  
+    ports:
+      - "8080:3000"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=example
+    depends_on:
+      - db
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.11   # <-- FIXED (no conflict with ES)
+    labels:
+      - "trust=x-forwarded-for"
+
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.10
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./elk/logstash/pipeline.conf:/usr/share/logstash/pipeline/pipeline.conf:ro
+    ports:
+      - "5044:5044"
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.4
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.10
+    depends_on:
+      - logstash
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - web-logs:/var/log/web   # <-- correctly mount a docker volume
+      - host-logs:/var/log/host
+      - db-logs:/var/log/db
+    networks:
+      aptnet:
+
+  elastalert:
+    image: jertel/elastalert2:latest
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./elk/elastalert/config.yaml:/opt/elastalert/config.yaml
+      - ./elk/elastalert/rules:/opt/elastalert/rules
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.2
+
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: appdb
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.12
+
+  host:
+    build: ./host
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ./host:/opt/host:rw
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.13
+
+  attacker:
+    build: ./attacker
+    stdin_open: true
+    tty: true
+    depends_on:
+      - web
+      - db
+      - host
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.50
+
+  ui:
+    build: ./ui
+    networks:
+      aptnet:
+        ipv4_address: 172.30.0.60
+    ports:
+      - "9222:9222"
+    tty: true
+    stdin_open: true
+
+volumes:
+  web-logs:
+  host-logs:
+  db-logs:
+  suri-logs:
+
+networks:
+  aptnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+
+
+
+

@@ -1,0 +1,8 @@
+name: Test Alert URL
+type: any
+index: filebeat-*
+filter:
+  - query:
+      query_string:
+        query: "url:*testalert*"
+alert: debug

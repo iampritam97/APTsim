@@ -1,0 +1,22 @@
+name: Detect debug endpoint access
+type: any
+
+index: filebeat-*
+timestamp_field: "@timestamp"
+
+filter:
+  - query:
+      query_string:
+        query: "message:*\\/debug*"
+
+alert:
+  - debug
+
+realert:
+  minutes: 1
+
+# OPTIONAL: print the matched document
+alert_text: "DEBUG endpoint accessed! Source IP: {0}, URL: {1}"
+alert_text_args:
+  - source.ip
+  - url.original

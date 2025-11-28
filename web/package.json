@@ -1,0 +1,18 @@
+{
+  "name": "vulnshop",
+  "version": "1.0.0",
+  "description": "Vulnerable demo app for APTsim",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "express-handlebars": "^7.0.7",
+    "jsonwebtoken": "^9.0.0",
+    "mysql": "^2.18.1",
+    "node-serialize": "^0.0.4"
+  }
+}

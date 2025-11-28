@@ -1,0 +1,1 @@
+alert http any any -> any any (msg:"XSS Attempt"; content:"<script>"; nocase; http_client_body; sid:100003;)

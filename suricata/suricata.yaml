@@ -1,0 +1,27 @@
+%YAML 1.1
+---
+
+vars:
+  address-groups:
+    HOME_NET: "[172.30.0.0/24]"
+    EXTERNAL_NET: "any"
+
+af-packet:
+  - interface: eth0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      types:
+        - alert
+        - http
+        - dns
+        - tls
+        - ssh
+        - flow
+        - anomaly
